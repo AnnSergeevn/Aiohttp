@@ -129,7 +129,7 @@ class AdvertisementView(web.View):
         return self.request.session
 
     @property
-    def user_id(self):
+    def advertisement_id(self):
         return int(self.request.match_info["advertisement_id"])
 
     async def get(self):
