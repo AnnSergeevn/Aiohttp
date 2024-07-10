@@ -50,21 +50,21 @@ def get_error(error_cls, error_description):
     )
 
 
-async def get_user(user_id: int, session: Session):
-    user = await session.get(User, user_id)
-    if user is None:
-        raise get_error(web.HTTPNotFound, "user not found")
-    return user
-
-
-async def add_user(user: User, session: Session):
-    session.add(user)
-    try:
-        await session.commit()
-    except IntegrityError:
-        error = get_error(web.HTTPConflict, "user already exists")
-        raise error
-    return user
+# async def get_user(user_id: int, session: Session):
+#     user = await session.get(User, user_id)
+#     if user is None:
+#         raise get_error(web.HTTPNotFound, "user not found")
+#     return user
+#
+#
+# async def add_user(user: User, session: Session):
+#     session.add(user)
+#     try:
+#         await session.commit()
+#     except IntegrityError:
+#         error = get_error(web.HTTPConflict, "user already exists")
+#         raise error
+#     return user
 
 
 async def get_adv(adv_id: int, session: Session):
@@ -84,42 +84,42 @@ async def add_adv(adv: Advertisement, session: Session):
     return adv
 
 
-class UserView(web.View):
-
-    @property
-    def session(self):
-        return self.request.session
-
-    @property
-    def user_id(self):
-        return int(self.request.match_info["user_id"])
-
-    async def get(self):
-        user = await get_user(self.user_id, self.session)
-        return web.json_response(user.json)
-
-    async def post(self):
-        json_data = await self.request.json()
-        json_data["password"] = hash_password(json_data["password"])
-        user = User(**json_data)
-        user = await add_user(user, self.session)
-        return web.json_response({"id": user.id})
-
-    async def patch(self):
-        json_data = await self.request.json()
-        if "password" in json_data:
-            json_data["password"] = hash_password(json_data["password"])
-        user = await get_user(self.user_id, self.session)
-        for field, value in json_data.items():
-            setattr(user, field, value)
-        user = await add_user(user, self.session)
-        return web.json_response({"id": user.id})
-
-    async def delete(self):
-        user = await get_user(self.user_id, self.session)
-        await self.session.delete(user)
-        await self.session.commit()
-        return web.json_response({"status": "deleted"})
+# class UserView(web.View):
+#
+#     @property
+#     def session(self):
+#         return self.request.session
+#
+#     @property
+#     def user_id(self):
+#         return int(self.request.match_info["user_id"])
+#
+#     async def get(self):
+#         user = await get_user(self.user_id, self.session)
+#         return web.json_response(user.json)
+#
+#     async def post(self):
+#         json_data = await self.request.json()
+#         json_data["password"] = hash_password(json_data["password"])
+#         user = User(**json_data)
+#         user = await add_user(user, self.session)
+#         return web.json_response({"id": user.id})
+#
+#     async def patch(self):
+#         json_data = await self.request.json()
+#         if "password" in json_data:
+#             json_data["password"] = hash_password(json_data["password"])
+#         user = await get_user(self.user_id, self.session)
+#         for field, value in json_data.items():
+#             setattr(user, field, value)
+#         user = await add_user(user, self.session)
+#         return web.json_response({"id": user.id})
+#
+#     async def delete(self):
+#         user = await get_user(self.user_id, self.session)
+#         await self.session.delete(user)
+#         await self.session.commit()
+#         return web.json_response({"status": "deleted"})
 
 
 class AdvertisementView(web.View):
@@ -134,7 +134,10 @@ class AdvertisementView(web.View):
 
     async def get(self):
         adv = await get_adv(self.advertisement_id, self.session)
-        return web.json_response(adv.json)
+        return web.json_response({'id': adv.id,
+            'heading': adv.heading,
+            'description': adv.description,
+            'user_id': adv.user_id})
 
     async def post(self):
         advertisement_data = await self.request.json()
@@ -149,13 +152,14 @@ class AdvertisementView(web.View):
         })
 
     async def patch(self):
-        #adv_id = int(self.request.match_info['advertisement_id'])
-        adv_id = await get_adv(self.advertisement_id, self.session)
-        adv_patch = await self.request.json()
-        adv = await get_adv(adv_id, self.session)
-        for field, value in adv_patch.items():
+        json_data = await self.request.json()
+
+        adv = await get_adv(self.advertisement_id, self.session)
+        for field, value in json_data.items():
             setattr(adv, field, value)
         adv = await add_adv(adv, self.session)
+        #return web.json_response({"id": user.id})
+
 
         return web.json_response({
             'id': adv.id,
@@ -165,28 +169,33 @@ class AdvertisementView(web.View):
         })
 
     async def delete(self):
+        # adv = await get_adv(self.advertisement_id, self.session)
+        # # adv = await get_adv(self.adv_id, self.session)
+        # await self.session.delete(adv)
+        # await self.session.commit()
+        # return web.json_response({"status": "deleted"})
+
         adv = await get_adv(self.advertisement_id, self.session)
-        # adv = await get_adv(self.adv_id, self.session)
         await self.session.delete(adv)
         await self.session.commit()
         return web.json_response({"status": "deleted"})
 
 
-app.add_routes(
-    [
-        web.post("/user/", UserView),
-        web.get("/user/{user_id:\d+}/", UserView),
-        web.patch("/user/{user_id:\d+}/", UserView),
-        web.delete("/user/{user_id:\d+}/", UserView),
-    ]
-)
+# app.add_routes(
+#     [
+#         web.post("/user/", UserView),
+#         web.get("/user/{user_id:\d+}/", UserView),
+#         web.patch("/user/{user_id:\d+}/", UserView),
+#         web.delete("/user/{user_id:\d+}/", UserView),
+#     ]
+# )
 
 app.add_routes(
     [
         web.post('/adv/', AdvertisementView),
-        web.get("/adv/{adv_id:\d+}/", AdvertisementView),
-        web.patch('/adv/{adv_id:\d+}/', AdvertisementView),
-        web.delete('/adv/{adv_id:\d+}/', AdvertisementView),
+        web.get("/adv/{advertisement_id:\d+}/", AdvertisementView),
+        web.patch('/adv/{advertisement_id:\d+}/', AdvertisementView),
+        web.delete('/adv/{advertisement_id:\d+}/', AdvertisementView),
     ]
 )
 
