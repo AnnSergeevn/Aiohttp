@@ -34,8 +34,8 @@ class User(Base):
     name: Mapped[str] = mapped_column(String, nullable=False, unique=True)
     password: Mapped[str] = mapped_column(String(64), nullable=False)
     registration_time: Mapped[datetime.datetime] = mapped_column(
-        DateTime, server_default=func.now()
-    )
+        DateTime, server_default=func.now())
+
 
     @property
     def json(self):
@@ -55,6 +55,8 @@ class Advertisement(Base):
     date_of_creation = mapped_column(DateTime, server_default=func.now())
     user_id = mapped_column(Integer, ForeignKey("app_users.id", ondelete="CASCADE"))
     user = relationship("User", backref="advertisements")
+
+
 
     @property
     def json(self):

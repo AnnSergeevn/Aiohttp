@@ -5,29 +5,37 @@ import aiohttp
 
 async def main():
     session = aiohttp.ClientSession()
-
-    response = await session.post(
-        "http://127.0.0.1:8080/adv/",
-        json={'heading': 'Aticle3',
-              'description': 'descriptions',
-              #'user_id': 1,
-              }
-
-    )
-    print(response.status)
-    print(await response.json())
-
-    # response = await session.get(
-    #     "http://127.0.0.1:8080/adv/4/",
+    #
+    # response = await session.post(
+    #     "http://127.0.0.1:8080/user/",
+    #     json={'name': 'user_6', 'password': '1234'},
     #
     # )
     # print(response.status)
     # print(await response.json())
 
+    # response = await session.post(
+    #     "http://127.0.0.1:8080/adv/",
+    #     json={'heading': 'Aticle4',
+    #           'description': 'descriptions',
+    #           'user_id': 1
+    #           }
+    #
+    # )
+    # print(response.status)
+    # print(await response.json())
+
+    response = await session.get(
+        "http://127.0.0.1:8080/adv/1/",
+
+    )
+    print(response.status)
+    print(await response.json())
+
     # response = await session.patch(
-    #     "http://127.0.0.1:8080/user/4/",
+    #     "http://127.0.0.1:8080/adv/1/",
     #     json={
-    #         'name': 'new_name'
+    #         'heading': 'Aticle5'
     #     }
     #
     # )
